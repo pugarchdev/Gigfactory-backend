@@ -1,0 +1,349 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  category    String   @default("General")
+  status      String   @default("ongoing")
+  description String
+  scope       String
+  images      String[]
+  area        String
+  location    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+}
+
+model CaseStudy {
+  id        Int      @id @default(autoincrement())
+  name      String
+  category  String   @default("General")
+  image     String?
+  features  String
+  pdfLink   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+}
+
+model Expertise {
+  id          Int      @id @default(autoincrement())
+  category    String
+  name        String
+  image       String?
+  description String
+  points      String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+}
+
+model YoutubeVideo {
+  id          Int      @id @default(autoincrement())
+  title       String
+  youtubeLink String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+}
+
+
+model Admin {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  role      AdminRole @default(ADMIN)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model AgencyApplication {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // 1. Identity & Accountability
+  authorizedPerson String?
+  designation      String?
+  linkedinUrl      String?
+  headquarters     String?
+  website          String?
+
+  // 2. Legal & Tax Identity
+  companyName String?
+  gstNumber   String?
+  cin         String?
+  pan         String?
+
+  // 3. Service Selection (Flags)
+  providesBIM          Boolean @default(false)
+  providesAsBuiltAudit Boolean @default(false)
+  providesPeerReview   Boolean @default(false)
+  providesBOQ          Boolean @default(false)
+  provides3DRendering  Boolean @default(false)
+
+  // BIM & 2D Drafting
+  bimSoftwares   String?
+  lodCapability  String?
+  cdeExperience  String?
+
+  // As-Built Audit
+  equipmentOwned String?
+  serviceRadius  String?
+
+  // Peer Review
+  totalExperience String?
+  specialization  String?
+
+  // BOQ
+  measurementStandard String?
+  estimationSoftware  String?
+
+  // 3D Visualization
+  renderingEngines    String?
+  hardwareCapacity    String?
+  animationCapability Boolean?
+
+  // 4. Evidence & Commercials
+  portfolioUrl    String?
+  portfolioPdfUrl String?   
+  commercialBasis String?
+  baseRate        Float?
+  leadTime        String?
+  teamSize        String?
+
+  // 5. Declaration
+  isVerified      Boolean  @default(false)
+  signature       String?
+  declarationDate DateTime?
+
+  // Admin Control
+  status          ApplicationStatus @default(PENDING)
+  deletedAt       DateTime?
+}
+
+model FreelancerApplication {
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // 1. Identity & Accountability
+  fullName     String?
+  designation  String?
+  linkedinUrl  String?
+  location     String?
+
+  // 2. Legal & Tax Identity
+  legalName String?
+  pan       String?
+
+  // 3. Services
+  providesBIM          Boolean @default(false)
+  providesAsBuiltAudit Boolean @default(false)
+  providesPeerReview   Boolean @default(false)
+  providesBOQ          Boolean @default(false)
+  provides3DRendering  Boolean @default(false)
+
+  // BIM & 2D Drafting
+  bimSoftwares   String?
+  lodCapability  String?
+  cdeExperience  String?
+
+  // As-Built Audit
+  equipmentOwned String?
+  serviceRadius  String?
+
+  // Peer Review
+  totalExperience String?
+  specialization  String?
+
+  // BOQ
+  measurementStandard String?
+  estimationSoftware  String?
+
+  // 3D Visualization
+  renderingEngines    String?
+  hardwareCapacity    String?
+  animationCapability Boolean?
+
+  // 4. Commercials & Availability
+  portfolioUrl    String?
+  portfolioPdfUrl String?
+  commercialBasis String?
+  baseRate        Float?
+  leadTime        String?
+  availability    String?
+
+  // 5. Declaration
+  isVerified      Boolean  @default(false)
+  signature       String?
+  declarationDate DateTime?
+
+  // Admin Control
+  status          ApplicationStatus @default(PENDING)
+  deletedAt       DateTime?
+}
+
+// --- Shared Enums ---
+
+enum LODLevel {
+  LOD_300
+  LOD_350
+  LOD_400
+  LOD_500
+}
+
+enum Specialization {
+  STRUCTURAL
+  MEP
+  ARCHITECTURAL
+  FIRE_LIFE_SAFETY
+}
+
+enum MeasurementStandard {
+  IS_1200
+  RICS
+  NRM2
+  SMM7
+}
+
+enum HardwareCapacity {
+  RENDER_FARM
+  HIGH_END_GPU
+  CLOUD_RENDERING
+  STANDARD_WORKSTATION
+}
+
+enum SoftwareType {
+  REVIT
+  AUTOCAD
+  NAVISWORKS
+  TEKLA
+  CIVIL_3D
+}
+
+enum EquipmentType {
+  LASER_SCANNER
+  TOTAL_STATION
+  DRONE
+}
+
+enum RenderingEngine {
+  VRAY
+  CORONA
+  LUMION
+  UNREAL_ENGINE
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// --- Agency Specific Enums ---
+
+enum ServiceRadius {
+  CITY
+  STATE
+  NATIONWIDE
+  PAN_INDIA_EXPORT
+}
+
+enum CommercialBasis {
+  HOURLY
+  PER_SQFT
+  PER_SHEET
+  LUMP_SUM
+}
+
+enum LeadTime {
+  IMMEDIATE
+  ONE_WEEK
+  TWO_WEEKS
+  FOUR_WEEKS
+}
+
+// --- Freelancer Specific Enums ---
+
+enum ServiceRadiusFreelancer {
+  CITY
+  STATE
+  NATIONWIDE
+}
+
+enum CommercialBasisFreelancer {
+  HOURLY
+  PER_SQFT
+  PER_SHEET
+  FIXED_PROJECT
+}
+
+enum LeadTimeFreelancer {
+  IMMEDIATE
+  ONE_WEEK
+  TWO_WEEKS
+}
+
+enum Availability {
+  FULL_TIME
+  PART_TIME
+  PROJECT_BASIS
+}
+
+model GigExpertFeedback {
+  id                String   @id @default(uuid())
+  
+  name              String
+  expertType        String?
+  expertTypeOther   String?
+  experience        String?
+  phone             String?
+  email             String?
+  location          String?
+  workGeography     String?
+  teamSize          String?
+  teamComposition   String?
+  gigExpertTypes    String[]
+  gigExpertTypeOther String?
+  designOrBuild     String?
+  projectTypes      String[]
+  projectTypeOther  String?
+  keyWorkAreas      String?
+
+  // Administrative
+  status            String   @default("pending")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+}
+
+
+
+model Enquiry {
+  id          Int      @id @default(autoincrement())
+  name        String?
+  companyName String?
+  email       String
+  phone       String?
+  message     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
