@@ -5,11 +5,14 @@ const { SMTP_HOST, SMTP_PORT, SMTP_EMAIL, SMTP_PASSWORD } = process.env;
 const transporter = nodemailer.createTransport({
   host: SMTP_HOST || 'smtp.gmail.com',
   port: Number(SMTP_PORT) || 465,
-  secure: true,
+  secure: Number(SMTP_PORT) === 465,
   auth: {
     user: SMTP_EMAIL,
     pass: SMTP_PASSWORD,
   },
+  tls: {
+    rejectUnauthorized: false
+  }
 })
 
 transporter.verify((error) => {
@@ -27,7 +30,7 @@ export const sendEnquiryEmail = async (enquiryData) => {
   const { name, companyName, email, phone, message } = enquiryData;
   const adminEmail = process.env.SMTP_EMAIL;
   const isCaseStudyLead = message && message.includes("Case Study Download Interest");
-  
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -65,9 +68,9 @@ export const sendEnquiryEmail = async (enquiryData) => {
   return transporter.sendMail({
     from: `"GigFactory Admin" <${process.env.SMTP_EMAIL}>`,
     to: adminEmail,
-    subject: isCaseStudyLead 
+    subject: isCaseStudyLead
       ? `📚 Case Study Lead: ${name}`
-      : `🚀 New Gig Enquiry from ${companyName || name}`,
+      : `New Gig Enquiry from ${companyName || name}`,
     html,
   });
 };
@@ -104,10 +107,10 @@ export const sendAgencyApplicationEmail = async (data) => {
         </div>
 
         <div class="section">
-          <div class="section-title">Identity & Accountability</div>
+          <div class="section-title">Basic Details</div>
           <div class="grid">
             ${data.authorizedPerson ? `<div class="field"><div class="label">Authorised Person</div><div class="value">${data.authorizedPerson}</div></div>` : ''}
-            ${data.designation ? `<div class="field"><div class="label">Designation</div><div class="value">${data.designation}</div></div>` : ''}
+            ${data.designation ? `<div class="field"><div class="label">Role</div><div class="value">${data.designation}</div></div>` : ''}
             ${data.companyName ? `<div class="field"><div class="label">Company Name</div><div class="value">${data.companyName}</div></div>` : ''}
             ${data.headquarters ? `<div class="field"><div class="label">Headquarters</div><div class="value">${data.headquarters}</div></div>` : ''}
             ${data.linkedinUrl ? `<div class="field"><div class="label">LinkedIn</div><div class="value"><a href="${data.linkedinUrl}" style="color:#3b82f6;">Profile Link</a></div></div>` : ''}
@@ -127,7 +130,7 @@ export const sendAgencyApplicationEmail = async (data) => {
         ` : ''}
 
         <div class="section">
-          <div class="section-title">Technical Expertise</div>
+          <div class="section-title">Service</div>
           <div style="margin-bottom: 20px;">
             ${data.providesBIM ? '<span class="tag">BIM & Drafting</span>' : ''}
             ${data.providesAsBuiltAudit ? '<span class="tag">As-Built Audit</span>' : ''}
@@ -242,10 +245,10 @@ export const sendFreelancerApplicationEmail = async (data) => {
         </div>
 
         <div class="section">
-          <div class="section-title">Identity & Profile</div>
+          <div class="section-title">Basic Details</div>
           <div class="grid">
             ${data.fullName ? `<div class="field"><div class="label">Full Name</div><div class="value">${data.fullName}</div></div>` : ''}
-            ${data.designation ? `<div class="field"><div class="label">Designation</div><div class="value">${data.designation}</div></div>` : ''}
+            ${data.designation ? `<div class="field"><div class="label">Role</div><div class="value">${data.designation}</div></div>` : ''}
             ${data.location ? `<div class="field"><div class="label">Location</div><div class="value">${data.location}</div></div>` : ''}
             ${data.linkedinUrl ? `<div class="field"><div class="label">LinkedIn</div><div class="value"><a href="${data.linkedinUrl}" style="color:#10b981;">Profile Link</a></div></div>` : ''}
           </div>
@@ -262,7 +265,7 @@ export const sendFreelancerApplicationEmail = async (data) => {
         ` : ''}
 
         <div class="section">
-          <div class="section-title">Technical Expertise</div>
+          <div class="section-title">Service</div>
           <div style="margin-bottom: 20px;">
             ${data.providesBIM ? '<span class="tag">BIM & Drafting</span>' : ''}
             ${data.providesAsBuiltAudit ? '<span class="tag">As-Built Audit</span>' : ''}

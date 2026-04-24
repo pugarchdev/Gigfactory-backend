@@ -18,11 +18,11 @@ const storage = new CloudinaryStorage({
 
     return {
       folder: 'gigfactory_uploads',
-      resource_type: isPdf ? 'raw' : 'auto', 
-      
+      resource_type: isPdf ? 'raw' : 'auto',
+
       // 3. ✅ FIX: If it's a PDF, add '.pdf' to the public_id. Otherwise, leave it normal.
-      public_id: isPdf 
-        ? `${baseName}_${Date.now()}.pdf` 
+      public_id: isPdf
+        ? `${baseName}_${Date.now()}.pdf`
         : `${baseName}_${Date.now()}`,
     };
   },
@@ -30,9 +30,9 @@ const storage = new CloudinaryStorage({
 
 
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit to match Cloudinary free tier
+  limits: { fileSize: 100 * 1024 * 1024 } // Increased to 100MB limit to support larger videos
 });
 
 router.post('/', upload.single('file'), (req, res) => {
@@ -42,11 +42,11 @@ router.post('/', upload.single('file'), (req, res) => {
     }
 
     // Add this to see exactly what Cloudinary returns in your terminal
-    console.log("Cloudinary uploaded file data:", req.file); 
+    console.log("Cloudinary uploaded file data:", req.file);
 
     // ✅ FIX: Use req.file.path instead of secure_url
     res.status(200).json({ url: req.file.path });
-    
+
   } catch (error) {
     console.error('Upload Error:', error);
     res.status(500).json({ error: 'Failed to upload file' });

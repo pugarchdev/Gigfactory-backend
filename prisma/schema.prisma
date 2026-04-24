@@ -39,6 +39,7 @@ model Expertise {
   category    String
   name        String
   image       String?
+  video       String?
   description String
   points      String[]
   createdAt   DateTime @default(now())
