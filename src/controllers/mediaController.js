@@ -101,9 +101,14 @@ const controller = {
 
   async getById(req, res) {
     try {
-      const id = Number(req.params.id);
+      const param = req.params.id;
+      const isNum = !isNaN(Number(param));
+
       const item = await prisma.media.findFirst({
-        where: { id, deletedAt: null },
+        where: {
+          deletedAt: null,
+          ...(isNum ? { id: Number(param) } : { slug: param })
+        },
       });
       if (!item) {
         return res.status(404).json({ message: 'Media item not found' });
