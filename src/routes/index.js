@@ -9,6 +9,8 @@ import gigExpertFeedbackRoutes from './gigExpertFeedbackRoutes.js';
 import adminsRoutes from './adminsRoutes.js';
 import enquiryRoutes from './enquiryRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
+import mediaRoutes from './mediaRoutes.js';
+import mediaSettingsRoutes from './mediaSettingsRoutes.js';
 
 const router = Router();
 
@@ -25,6 +27,8 @@ router.use('/recruitment/freelancer', freelancerRecruitmentRoutes);
 router.use('/app/gigexpert', gigExpertFeedbackRoutes);
 router.use('/enquiries', enquiryRoutes);
 router.use('/admins', adminsRoutes);
+router.use('/media', mediaRoutes);
+router.use('/media-settings', mediaSettingsRoutes);
 
 
 router.use('/upload', uploadRoutes);
