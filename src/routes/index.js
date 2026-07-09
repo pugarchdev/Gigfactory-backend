@@ -11,6 +11,7 @@ import enquiryRoutes from './enquiryRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
 import mediaRoutes from './mediaRoutes.js';
 import mediaSettingsRoutes from './mediaSettingsRoutes.js';
+import faqRoutes from './faqRoutes.js';
 
 const router = Router();
 
@@ -29,6 +30,7 @@ router.use('/enquiries', enquiryRoutes);
 router.use('/admins', adminsRoutes);
 router.use('/media', mediaRoutes);
 router.use('/media-settings', mediaSettingsRoutes);
+router.use('/faq', faqRoutes);
 
 
 router.use('/upload', uploadRoutes);

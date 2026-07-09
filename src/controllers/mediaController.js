@@ -9,16 +9,41 @@ const controller = {
       const page = req.query.page ? parseInt(req.query.page, 10) : null;
       const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
 
+      // Check if request is from an authenticated admin
+      const adminEmail = req.headers['x-admin-email'];
+      let isAdmin = false;
+      if (adminEmail) {
+        const admin = await prisma.admin.findUnique({
+          where: { email: adminEmail }
+        });
+        if (admin && admin.isActive && !admin.deletedAt) {
+          isAdmin = true;
+        }
+      }
+
+      // Enforce status='published' naturally for non-admin requests
+      if (!isAdmin) {
+        if (status && status !== 'published') {
+          return res.status(403).json({ message: 'Forbidden: You do not have permission to access non-published media' });
+        }
+      }
+
       const where = {
         deletedAt: null,
       };
 
       if (type) {
         where.type = type;
+      } else {
+        where.type = { not: 'logo' };
       }
-      if (status) {
+
+      if (!isAdmin) {
+        where.status = 'published';
+      } else if (status) {
         where.status = status;
       }
+
       if (search) {
         where.OR = [
           { title: { contains: search, mode: 'insensitive' } },
@@ -39,23 +64,32 @@ const controller = {
 
         if (blogSortBy === 'priority') {
           orderBy = [
+            { isPinned: 'desc' },
             { priority: 'asc' },
             { id: 'desc' }
           ];
         } else {
           orderBy = [
+            { isPinned: 'desc' },
             { publishedAt: 'desc' },
             { id: 'desc' }
           ];
         }
       } else if (type === 'achievement') {
         orderBy = [
+          { isPinned: 'desc' },
+          { priority: 'asc' },
+          { id: 'desc' }
+        ];
+      } else if (type === 'logo') {
+        orderBy = [
           { priority: 'asc' },
           { id: 'desc' }
         ];
       } else {
-        // General fallback sorting
+        // General fallback sorting (which excludes logos)
         orderBy = [
+          { isPinned: 'desc' },
           { createdAt: 'desc' }
         ];
       }
@@ -75,8 +109,16 @@ const controller = {
 
       const items = await prisma.media.findMany(findOptions);
 
-      // Hide priority from frontend response
-      const sanitizedItems = items.map(({ priority, ...rest }) => rest);
+      // Hide priority and metadata from frontend response depending on auth
+      const sanitizedItems = items.map(item => {
+        if (!isAdmin) {
+          const { priority, deletedAt, updatedAt, ...rest } = item;
+          return rest;
+        } else {
+          const { priority, ...rest } = item;
+          return rest;
+        }
+      });
 
       if (page && limit) {
         return res.json({
@@ -104,19 +146,41 @@ const controller = {
       const param = req.params.id;
       const isNum = !isNaN(Number(param));
 
+      // Check if request is from an authenticated admin
+      const adminEmail = req.headers['x-admin-email'];
+      let isAdmin = false;
+      if (adminEmail) {
+        const admin = await prisma.admin.findUnique({
+          where: { email: adminEmail }
+        });
+        if (admin && admin.isActive && !admin.deletedAt) {
+          isAdmin = true;
+        }
+      }
+
       const item = await prisma.media.findFirst({
         where: {
           deletedAt: null,
           ...(isNum ? { id: Number(param) } : { slug: param })
-        },
+        }
       });
+
       if (!item) {
         return res.status(404).json({ message: 'Media item not found' });
       }
 
-      // Hide priority from frontend response
-      const { priority, ...rest } = item;
-      return res.json(rest);
+      if (!isAdmin && item.status !== 'published') {
+        return res.status(403).json({ message: 'Forbidden: You do not have permission to access this item' });
+      }
+
+      // Hide priority and metadata from frontend response depending on auth
+      if (!isAdmin) {
+        const { priority, deletedAt, updatedAt, ...rest } = item;
+        return res.json(rest);
+      } else {
+        const { priority, ...rest } = item;
+        return res.json(rest);
+      }
     } catch (error) {
       console.error("Failed to fetch media item:", error);
       return res.status(500).json({ message: 'Failed to fetch media item' });
@@ -128,8 +192,8 @@ const controller = {
       const payload = req.body || {};
       const { type } = payload;
 
-      if (!type || (type !== 'blog' && type !== 'achievement')) {
-        return res.status(400).json({ message: 'Valid type ("blog" or "achievement") is required' });
+      if (!type || (type !== 'blog' && type !== 'achievement' && type !== 'logo')) {
+        return res.status(400).json({ message: 'Valid type ("blog", "achievement" or "logo") is required' });
       }
 
       // Automatically compute next priority for manual ordering

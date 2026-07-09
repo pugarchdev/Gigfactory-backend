@@ -364,6 +364,7 @@ model Media {
   pdfLink         String?
   author          String?   @default("GigFactory")
   status          String    @default("published")
+  isPinned        Boolean   @default(false)
   priority        Int       @default(0)
   publishedAt     DateTime  @default(now())
   createdAt       DateTime  @default(now())
@@ -375,6 +376,10 @@ model Media {
   source          String?
   link            String?
 
+  // Logo-specific styling fields
+  logoMaxHeight   String?
+  logoMaxWidth    String?
+
   @@index([type, status])
 }
 
@@ -384,4 +389,15 @@ model MediaSetting {
   value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model FAQ {
+  id        Int      @id @default(autoincrement())
+  q         String
+  a         String
+  priority  Int      @default(0)
+  mostAsked Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 }

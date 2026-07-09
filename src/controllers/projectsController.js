@@ -9,6 +9,8 @@ const controller = {
   async list(req, res) {
     try {
       const { category, status, name, location, search } = req.query;
+      const page = req.query.page ? parseInt(req.query.page, 10) : null;
+      const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
 
       const where = {
         deletedAt: null,
@@ -35,15 +37,41 @@ const controller = {
         ];
       }
 
-      // Order by priority ascending, then by id descending as a fallback
-      const items = await prisma.project.findMany({
+      const total = await prisma.project.count({ where });
+
+      const findOptions = {
         where,
         orderBy: [
           { priority: 'asc' },
           { id: 'desc' },
         ],
-      });
-      res.json(items);
+      };
+
+      if (page && limit) {
+        findOptions.skip = (page - 1) * limit;
+        findOptions.take = limit;
+      }
+
+      const items = await prisma.project.findMany(findOptions);
+
+      // Hide priority and database internal metadata from response
+      const sanitizedItems = items.map(({ priority, deletedAt, updatedAt, ...rest }) => rest);
+
+      if (page && limit) {
+        return res.json({
+          data: sanitizedItems,
+          pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+            hasNextPage: page * limit < total,
+            hasPrevPage: page > 1,
+          }
+        });
+      }
+
+      res.json(sanitizedItems);
     } catch (error) {
       console.error("Failed to fetch projects:", error);
       res.status(500).json({ message: 'Failed to fetch projects' });
